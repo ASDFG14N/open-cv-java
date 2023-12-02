@@ -1,0 +1,132 @@
+package com.code.components;
+
+import static com.code.components.ShadowType.BOT;
+import static com.code.components.ShadowType.BOT_LEFT;
+import static com.code.components.ShadowType.BOT_RIGHT;
+import static com.code.components.ShadowType.TOP;
+import static com.code.components.ShadowType.TOP_LEFT;
+import static com.code.components.ShadowType.TOP_RIGHT;
+import com.code.layout.ShadowRenderer;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import javax.swing.JPanel;
+
+public class PanelRoundShadow extends JPanel {
+
+    private ShadowType shadowType = ShadowType.CENTER;
+    private int shadowSize = 10;
+    private float shadowOpacity = 0.3f;
+    private Color shadowColor = new Color(48, 44, 90);
+    private BufferedImage shadowImage;
+
+    public PanelRoundShadow() {
+        setOpaque(false);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        g.drawImage(shadowImage, 0, 0, null);
+        super.paintComponent(g);
+    }
+
+    @Override
+    public void setBounds(int i, int i1, int i2, int i3) {
+        super.setBounds(i, i1, i2, i3);
+        createShadow();
+    }
+
+    private void createShadow() {
+        int size = shadowSize * 2;
+        int x = 0;
+        int y = 0;
+        int width = getWidth() - size;
+        int height = getHeight() - size;
+        if (null == shadowType) {
+            //  Center
+            x = shadowSize;
+            y = shadowSize;
+        } else {
+            switch (shadowType) {
+                case TOP -> {
+                    x = shadowSize;
+                    y = size;
+                }
+                case BOT -> {
+                    x = shadowSize;
+                    y = 0;
+                }
+                case TOP_LEFT -> {
+                    x = size;
+                    y = size;
+                }
+                case TOP_RIGHT -> {
+                    x = 0;
+                    y = size;
+                }
+                case BOT_LEFT -> {
+                    x = size;
+                    y = 0;
+                }
+                case BOT_RIGHT -> {
+                    x = 0;
+                    y = 0;
+                }
+                default -> {
+                    //  Center
+                    x = shadowSize;
+                    y = shadowSize;
+                }
+            }
+        }
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(getBackground());
+        g.fillRoundRect(0, 0, width, height, 10, 10);
+        //  Create Shadow
+        ShadowRenderer render = new ShadowRenderer(shadowSize, shadowOpacity, shadowColor);
+        shadowImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = shadowImage.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.drawImage(render.createShadow(img), 0, 0, null);
+        g2.fillRoundRect(x, y, width, height, 10, 10);
+        g2.dispose();
+    }
+
+    public ShadowType getShadowType() {
+        return shadowType;
+    }
+
+    public void setShadowType(ShadowType shadowType) {
+        this.shadowType = shadowType;
+    }
+
+    public int getShadowSize() {
+        return shadowSize;
+    }
+
+    public void setShadowSize(int shadowSize) {
+        this.shadowSize = shadowSize;
+    }
+
+    public float getShadowOpacity() {
+        return shadowOpacity;
+    }
+
+    public void setShadowOpacity(float shadowOpacity) {
+        this.shadowOpacity = shadowOpacity;
+    }
+
+    public Color getShadowColor() {
+        return shadowColor;
+    }
+
+    public void setShadowColor(Color shadowColor) {
+        this.shadowColor = shadowColor;
+    }
+
+
+}
