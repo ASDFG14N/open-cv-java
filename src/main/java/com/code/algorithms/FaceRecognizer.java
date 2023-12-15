@@ -75,7 +75,8 @@ public class FaceRecognizer extends VideoProcessingAlgorithm implements FileMana
 
     @Override
     public Mat processFrame(Mat frame, int w, int h) {
-        resize(frame, frame, new Size(950, 600));
+        //resize(frame, frame, new Size(950, 600));
+        resize(frame, frame, new Size(w, h));
         grayFilter = new Mat();
         cvtColor(frame, grayFilter, COLOR_BGR2GRAY);
         equalizeHist(grayFilter, grayFilter);
@@ -149,7 +150,7 @@ public class FaceRecognizer extends VideoProcessingAlgorithm implements FileMana
                     rectColor
             );
         }
-        resize(frame, frame, new Size(w, h));
+        // resize(frame, frame, new Size(w, h));
         return frame;
     }
 
@@ -264,7 +265,6 @@ public class FaceRecognizer extends VideoProcessingAlgorithm implements FileMana
         for (File image : imageFiles) {
             Mat img = imread(image.getAbsolutePath(), IMREAD_GRAYSCALE);
             int label = Integer.parseInt(image.getName().split("\\-")[0]);
-            System.out.println("El valor de label es: " + label);
             images.put(counter, img);
             labelsBuf.put(counter, label);
             counter++;

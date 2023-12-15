@@ -1,6 +1,8 @@
 package com.code.algorithms;
 
 import static com.code.algorithms.MotionDetection.RecognitionPlates.plateNumber;
+import com.code.model.Semaphore.State;
+import static com.code.model.Semaphore.currentState;
 import com.code.model.Time;
 import com.code.routes.Routes;
 import static com.code.routes.Routes.PATH_IMG_OV;
@@ -93,7 +95,7 @@ public class MotionDetection extends VideoProcessingAlgorithm {
     private int lineLimitSupX;
 
     private int countTotalCars = 0;
-    private int countCarsInArea = 0;
+    public static int countCarsInArea = 0;
     private int countOffendingVehicle = 0;
 
     private Map<Integer, int[]> centralCoordinates = new HashMap<>();
@@ -191,7 +193,7 @@ public class MotionDetection extends VideoProcessingAlgorithm {
         //Este metodo se utiliza para que dado un contorno se le asigne un
         //identificador unico
         List<Object[]> inf_id = carIdentifier(detections);
-        System.out.println("El valor de inf_id es: " + inf_id.size());
+        //System.out.println("El valor de inf_id es: " + inf_id.size());
 
         //Dibujar rectangulo y poner velocidad + id
         for (Object[] info : inf_id) {
@@ -200,7 +202,7 @@ public class MotionDetection extends VideoProcessingAlgorithm {
             int width = (int) info[2];
             int height = (int) info[3];
             idCar = (int) info[4];
-            System.out.println("El primer valor de idCar es: " + idCar);
+            //System.out.println("El primer valor de idCar es: " + idCar);
             //Dibuja un rectagulo alrededor del vehiculo
             drawBorder(frame, new Point(x, y), new Point(x + width, y + height));
 
@@ -374,20 +376,28 @@ public class MotionDetection extends VideoProcessingAlgorithm {
 
     //Limite del semaforo
     private void drawFinalLimit(int x, int wi, Mat frame) {
+        //Si el auto cruza la linea 
         if (startPointX - 15 < (x + wi) && (x + wi) < startPointX + 15) {
-            System.out.println("El id es: " + idCar);
             countTotalCars++;
             //Incrementar el valor de los vehiculos que cruzaron la linea amarilla
-            countOffendingVehicle++;
-            RecognitionPlates.isRuleViolation = true;
-            Object[] rowData = {
-                "[" + time.getCurrentTime2() + "]",
-                "ID: " + idCar + " "
-                + "N° Placa: " + plateNumber
-            };
-            modelMessages.addRow(rowData);
-            //int lastRow = asyncMessagesBody.getRowCount() - 1;
-            //asyncMessagesBody.scrollRectToVisible(asyncMessagesBody.getCellRect(lastRow, 0, true));
+            //y ademas el estado del semaforo es rojo
+            if (currentState == State.RED) {
+                countOffendingVehicle++;
+                System.out.println("infraccion!");
+                RecognitionPlates.isRuleViolation = true;
+                Object[] rowData = {
+                    "[" + time.getCurrentTime2() + "]",
+                    "¡INFRACCIÓN! ID: " + idCar + " "
+                    + "N° Placa: " + plateNumber
+                };
+                modelMessages.addRow(rowData);
+            } else {
+                Object[] rowData = {
+                    "[" + time.getCurrentTime2() + "]",
+                    "ID: " + idCar
+                };
+                modelMessages.addRow(rowData);
+            }
             if (countCarsInArea > 0) {
                 countCarsInArea--;
             } else {
@@ -608,6 +618,8 @@ public class MotionDetection extends VideoProcessingAlgorithm {
 
     /*
     ===============================================================
+    ===============================================================
+    Clase anidada
     ===============================================================
     ===============================================================
      */

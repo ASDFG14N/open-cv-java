@@ -36,7 +36,7 @@ public class FaceDetect extends VideoProcessingAlgorithm {
 
     @Override
     public Mat processFrame(Mat frame, int w, int h) {
-        resize(frame, frame, new Size(w, h));
+        resize(frame, frame, new Size(950, 600));
         grayFilter = new Mat();
         cvtColor(frame, grayFilter, COLOR_BGR2GRAY);
         equalizeHist(grayFilter, grayFilter);
@@ -69,6 +69,7 @@ public class FaceDetect extends VideoProcessingAlgorithm {
             );
             faceCount++;
         }
+        resize(frame, frame, new Size(w, h));
         return frame;
     }
 

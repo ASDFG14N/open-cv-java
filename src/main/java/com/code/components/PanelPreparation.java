@@ -24,7 +24,8 @@ import javax.swing.SwingUtilities;
 public class PanelPreparation extends javax.swing.JPanel {
 
     private PanelExport panelExport;
-    String video = "C:\\Users\\Gian\\Desktop\\CursoUCHJava\\pro\\src\\main\\resources\\utils\\quiensera.mp4";
+    String xd1 = "C:\\Users\\Gian\\Desktop\\CursoUCHJava\\pro\\src\\main\\resources\\utils\\quiensera.mp4";
+    String video = "C:\\Users\\Gian\\Desktop\\CursoUCHJava\\pro\\src\\main\\resources\\utils\\vid2.mp4";
 
     public PanelPreparation() {
         initComponents();
@@ -124,8 +125,8 @@ public class PanelPreparation extends javax.swing.JPanel {
     private void btnPreparationMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnPreparationMouseClicked
 
         String trainingDir = PATH_TRAINING_DIR.getRoute() + CollectFaces.folderName;
-        System.out.println(trainingDir);
-        String modelFileName = "Nomse";
+        //String trainingDir = PATH_TRAINING_DIR.getRoute() + "1_KanonGW";
+        String modelFileName = "ModeloDePrueba";
         FaceRecognizer fr = new FaceRecognizer();
 
         this.setPreferredSize(

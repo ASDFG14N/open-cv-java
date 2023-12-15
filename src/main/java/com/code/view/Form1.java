@@ -1,5 +1,6 @@
 package com.code.view;
 
+import com.code.algorithms.FaceDetect;
 import com.code.algorithms.FaceRecognizer;
 import com.code.algorithms.MotionDetection;
 import com.code.algorithms.MotionDetection.RecognitionPlates;
@@ -58,9 +59,10 @@ public class Form1 extends javax.swing.JPanel implements FileManagement {
         points = new ArrayList<>();
         modelMessages = (DefaultTableModel) asyncMessagesBody.getModel();
         if (existFile("PointsSave.txt")) {
-            //startVideo();
+            startVideo();
             semaphore.startSemaphore();
-            //xd();
+            //startFaceRecognizer();
+            startFaceDetect();
         } else {
             mostrar.doClick();
         }
@@ -340,7 +342,7 @@ public class Form1 extends javax.swing.JPanel implements FileManagement {
         return null;
     }
 
-    private void xd() {
+    private void startFaceRecognizer() {
         FaceRecognizer fr = new FaceRecognizer();
         VideoPlayerModel vpm2 = new VideoPlayerModel(vidA, screenThree);
         Thread video2 = new Thread(() -> {
@@ -350,26 +352,29 @@ public class Form1 extends javax.swing.JPanel implements FileManagement {
         video2.start();
     }
 
+    private void startFaceDetect() {
+        FaceDetect fd = new FaceDetect();
+        VideoPlayerModel vpm2 = new VideoPlayerModel(vidA, screenThree);
+        Thread video2 = new Thread(() -> {
+            vpm2.playVideo(fd);
+        });
+        video2.start();
+    }
+
     private void startVideo() {
         points = recoverData("PointsSave.txt", points);
         md2 = new MotionDetection(points);
         VideoPlayerModel vpm2 = new VideoPlayerModel(path, mainScreen);
-        RecognitionPlates rpxd = md2.new RecognitionPlates();
+        RecognitionPlates rp = md2.new RecognitionPlates();
         Thread video2 = new Thread(() -> {
             vpm2.playVideo(md2);
         });
         Thread video3 = new Thread(() -> {
-            rpxd.initVideoCapture();
+            rp.initVideoCapture();
         });
         video3.start();
         video2.start();
         System.out.println("State Video2: " + video2.getState());
-
-//        VideoPlayerModel vpm3 = new VideoPlayerModel(path, screenFour);
-//        Thread video3 = new Thread(() -> {
-//            vpm3.playVideo(rp);
-//        });
-//        video3.start();
     }
 
 

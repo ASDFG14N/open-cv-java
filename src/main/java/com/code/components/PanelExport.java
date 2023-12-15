@@ -123,7 +123,7 @@ public class PanelExport extends javax.swing.JPanel {
                 jLabel2.getBounds().x,
                 jLabel2.getBounds().y,
                 jLabel2.getBounds().width + 7,
-                300
+                350
         );
         Container parent = jLabel2.getParent();
         jLabel2.setVisible(false);

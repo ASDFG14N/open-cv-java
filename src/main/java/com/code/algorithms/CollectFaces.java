@@ -3,6 +3,7 @@ package com.code.algorithms;
 import static com.code.routes.Routes.FACE_DATA_FOLDER;
 import static com.code.routes.Routes.HAARCASCADE_FOLDER;
 import com.code.statics.FileManagement;
+import static com.code.statics.FileManagement.existFile;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 import static org.bytedeco.opencv.global.opencv_imgproc.COLOR_BGR2GRAY;
 import static org.bytedeco.opencv.global.opencv_imgproc.LINE_AA;
@@ -57,9 +58,10 @@ public class CollectFaces extends VideoProcessingAlgorithm implements FileManage
 
     public CollectFaces() {
         this.faceClassifier = new CascadeClassifier(HAARCASCADE_FOLDER.getRoute());
-        labelName = recoverData("Label-Name.txt", labelName);
-        label = recoverData("LabelValue.txt", label);
-        System.out.println("El valor de label es: " + label);
+        if (existFile("Label-Name.txt") && existFile("LabelValue.txt")) {
+            labelName = recoverData("Label-Name.txt", labelName);
+            label = recoverData("LabelValue.txt", label);
+        }
     }
 
     @Override

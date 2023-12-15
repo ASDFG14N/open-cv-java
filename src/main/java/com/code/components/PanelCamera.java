@@ -6,7 +6,6 @@ import com.code.model.VideoPlayerModel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.Image;
 import static java.awt.Image.SCALE_DEFAULT;
 import java.io.File;
 import javax.swing.Icon;
@@ -22,6 +21,7 @@ public class PanelCamera extends javax.swing.JPanel {
 
     private PanelClassName pcn;
     String xd = "C:\\Users\\Gian\\Desktop\\CursoUCHJava\\pro\\src\\main\\resources\\utils\\quiensera.mp4";
+    String xd2 = "C:\\Users\\Gian\\Desktop\\CursoUCHJava\\pro\\src\\main\\resources\\utils\\vid2.mp4";
 
     public PanelCamera(PanelClassName pcn) {
         initComponents();
@@ -200,15 +200,15 @@ public class PanelCamera extends javax.swing.JPanel {
     }//GEN-LAST:event_btnCloseMousePressed
 
     private void btnGrabberMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnGrabberMousePressed
-//        VideoPlayerModel vpm = new VideoPlayerModel(xd, screen);
-//        CollectFaces cf = new CollectFaces();
-//        new Thread(() -> {
-//            vpm.playVideo(cf);
-//        }).start();
-//
-//        cf.setName(pcn.getClassName());
+        VideoPlayerModel vpm = new VideoPlayerModel(xd2, screen);
+        CollectFaces cf = new CollectFaces();
+        new Thread(() -> {
+            vpm.playVideo(cf);
+        }).start();
 
-        File folder = new File("C:\\Users\\Gian\\Desktop\\CursoUCHJava\\pro\\src\\main\\resources\\dataFaces\\1_Class 1");
+        cf.setName(pcn.getClassName());
+
+        File folder = new File("C:\\Users\\Gian\\Desktop\\CursoUCHJava\\pro\\src\\main\\resources\\dataFaces\\1_KanonGW");
         File[] files = folder.listFiles();
 
         Gallery gallery = new Gallery();

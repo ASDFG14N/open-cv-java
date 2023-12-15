@@ -1,5 +1,6 @@
 package com.code.model;
 
+import static com.code.algorithms.MotionDetection.countCarsInArea;
 import static com.code.routes.Routes.SEMAPHORE_IMG_GREEN;
 import static com.code.routes.Routes.SEMAPHORE_IMG_RED;
 import static com.code.routes.Routes.SEMAPHORE_IMG_YELLOW;
@@ -23,16 +24,16 @@ public class Semaphore {
     private final int GREEN_TIME = 5000;
     private final int YELLOW_TIME = 2000;
 
-    private enum State {
+    public static enum State {
         RED,
         GREEN,
         YELLOW
     }
 
-    private State currentState;
+    public static State currentState;
 
     public Semaphore() {
-        this.currentState = State.RED;
+        currentState = State.RED;
         RED = SEMAPHORE_IMG_RED.getRoute();
         YELLOW = SEMAPHORE_IMG_YELLOW.getRoute();
         GREEN = SEMAPHORE_IMG_GREEN.getRoute();
@@ -64,6 +65,7 @@ public class Semaphore {
     private void showStatus() {
         switch (currentState) {
             case RED ->
+                //Semaforo en rojo
                 imgSem.setIcon(
                         new ImageIcon(
                                 new ImageIcon(RED).getImage()
@@ -75,6 +77,7 @@ public class Semaphore {
                         )
                 );
             case GREEN ->
+                //Semaforo en verde
                 imgSem.setIcon(
                         new ImageIcon(
                                 new ImageIcon(GREEN).getImage()
@@ -86,6 +89,7 @@ public class Semaphore {
                         )
                 );
             case YELLOW ->
+                //Semaforo en amarillo
                 imgSem.setIcon(
                         new ImageIcon(
                                 new ImageIcon(YELLOW).getImage()
@@ -100,29 +104,28 @@ public class Semaphore {
     }
 
     private void logica() {
-        int numeroPersonas = 0;  // Obtén este valor de tu fuente OpenCV
-        int numeroCarros = 0;    // Obtén este valor de tu fuente OpenCV
+        int numberPeople = 0;  // Obtén este valor de tu fuente OpenCV
+        int numberCars = countCarsInArea;
         boolean stopVehicles = false;
         boolean stopPeople = false;
 
-        int thresholdFewCars = 5;  // Ajusta este umbral según tus necesidades
-        int thresholdManyCars = 20; // Ajusta este umbral según tus necesidades
+        int thresholdFewCars = 5;
+        int thresholdManyCars = 20;
 
-        int thresholdFewPeople = 2;  // Ajusta este umbral según tus necesidades
-        int thresholdManyPeople = 10; // Ajusta este umbral según tus necesidades
+        int thresholdFewPeople = 2;
+        int thresholdManyPeople = 10;
 
         if (currentState == State.RED) {
             stopVehicles = true;
             stopPeople = false;
         } else if (currentState == State.GREEN) {
             // Si hay pocos autos y muchas personas, detener el tráfico de autos
-            if (numeroCarros <= thresholdFewCars && numeroPersonas > thresholdManyPeople) {
+            if (numberCars <= thresholdFewCars && numberPeople > thresholdManyPeople) {
                 stopVehicles = true;
             } // Si hay muchos autos y pocas personas, detener el tráfico de personas
-            else if (numeroCarros > thresholdManyCars && numeroPersonas <= thresholdFewPeople) {
+            else if (numberCars > thresholdManyCars && numberPeople <= thresholdFewPeople) {
                 stopPeople = true;
-            } // En otros casos, permitir el flujo normal
-            else {
+            } else {
                 stopVehicles = false;
                 stopPeople = false;
             }

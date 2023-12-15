@@ -10,7 +10,7 @@ import java.util.Calendar;
  *
  * @author Gian
  */
-public class Time extends Thread {
+public class Time {
 
     private LocalDate currentDate;
     private LocalTime currentTime;
@@ -54,30 +54,6 @@ public class Time extends Thread {
     public String monthName(int month) {
         String[] monthNames = new DateFormatSymbols().getMonths();
         return monthNames[month];
-    }
-
-    @SuppressWarnings("SleepWhileInLoop")
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                Calendar cal = Calendar.getInstance();
-                int hour = cal.get(Calendar.HOUR_OF_DAY);
-                int minute = cal.get(Calendar.MINUTE);
-                int second = cal.get(Calendar.SECOND);
-                if (minute < 10) {
-                    minuteStr = "0" + String.valueOf(minute);
-                    String time = hour + ":" + minuteStr + ":" + second;
-                    System.out.println(time);
-                } else {
-                    String time = hour + ":" + minute + ":" + second;
-                    System.out.println(time);
-                }
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                System.out.println("Hubo un error en el hilo");
-            }
-        }
     }
 
 }

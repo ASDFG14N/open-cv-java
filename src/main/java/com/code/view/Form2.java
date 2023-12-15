@@ -5,7 +5,7 @@ import com.code.components.CardLayout;
 import com.code.components.PanelSlide;
 import com.code.controller.PersonFile;
 import com.code.controller.VehicleController;
-import com.code.model.Date;
+import com.code.controller.VehicleFile;
 import com.code.model.Person;
 import com.code.model.Time;
 import com.code.model.Vehicle;
@@ -14,14 +14,10 @@ import static com.code.routes.Routes.PATH_DATA_MONTH_OV;
 import static com.code.routes.Routes.PATH_PERSON_DB;
 import com.code.statics.FileManagement;
 import com.code.statics.Filesxd;
-
 import static com.code.view.Form1.md2;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +29,14 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import static javax.swing.JOptionPane.CANCEL_OPTION;
+import static javax.swing.JOptionPane.CLOSED_OPTION;
+import static javax.swing.JOptionPane.NO_OPTION;
+import static javax.swing.JOptionPane.WARNING_MESSAGE;
+import static javax.swing.JOptionPane.YES_NO_CANCEL_OPTION;
+import static javax.swing.JOptionPane.YES_OPTION;
+import static javax.swing.JOptionPane.showConfirmDialog;
+import static javax.swing.JOptionPane.showMessageDialog;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
@@ -56,6 +60,9 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
     private int poM1Value;
     private int poM2Value;
     private int poM3Value;
+    private int pa4;
+    private int pa5;
+    private int pa6;
 
     private int totalCars = 0;
     private int totalCars1 = 0;
@@ -81,6 +88,7 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
     private VehicleController vc;
 
     private PersonFile pf;
+    private VehicleFile vf;
 
     private int currentIndex = 0;
     private int nextIndex = 0;
@@ -88,6 +96,12 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
     private int monthSelect = 0;
 
     private Vehicle v = null;
+
+    private String name = "";
+    private String plate = "";
+    private String state = "";
+
+    private int selectedRow = 0;
 
     public Form2() {
         initComponents();
@@ -100,27 +114,29 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
         model = (DefaultTableModel) tableCustom.getModel();
         chartBar.addLegend("Total de Vehículos", new Color(245, 189, 135));
         chartBar.addLegend("Vehículos infractores", new Color(135, 189, 245));
-        chartBar.addLegend("Profit", new Color(189, 135, 245));
-        chartBar.addLegend("Cost", new Color(139, 229, 222));
+        chartBar.addLegend("Vehículos sin infracción", new Color(189, 135, 245));
+        chartBar.addLegend("Puntos aumentados", new Color(139, 229, 222));
         setLabelsOnChart();
+        vf = new VehicleFile();
         renderDataTable(time.getCurrentMonth() + 1);
         rankPeople();
-        ListSelectionModel selectionModel = tableCustom.getSelectionModel();
+        initEvt();
+    }
+
+    private void initEvt() {
+        selectionModel = tableCustom.getSelectionModel();
         selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         selectionModel.addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
-                int selectedRow = tableCustom.getSelectedRow();
+                selectedRow = tableCustom.getSelectedRow();
                 if (selectedRow != -1) {
                     // Obtiene los datos de la fila seleccionada
                     Object id = tableCustom.getValueAt(selectedRow, 1);
-                    Object name = tableCustom.getValueAt(selectedRow, 2);
-                    Object plate = tableCustom.getValueAt(selectedRow, 3);
-                    Object state = tableCustom.getValueAt(selectedRow, 5);
-
-                    v = vc.searchReference((int) id, name.toString(), plate.toString());
-                    System.out.println(v.toString());
-                    //buscarYModificar((int) id, name.toString(), plate.toString(), monthSelect, v);
-
+                    name = tableCustom.getValueAt(selectedRow, 2).toString();
+                    plate = tableCustom.getValueAt(selectedRow, 3).toString();
+                    state = tableCustom.getValueAt(selectedRow, 5).toString();
+                    v = vc.searchReference((int) id, name, plate);
+                    // System.out.println("El vehiculo seleccionado es: " + v.toString());
                 }
             }
         });
@@ -533,7 +549,7 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
             }
         });
 
-        btnSave.setText("jButton2");
+        btnSave.setText("Guardar");
         btnSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSaveActionPerformed(evt);
@@ -728,7 +744,7 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void buscarYModificar(int id, String name, String plate, int monthCurrent, Vehicle v) {
+    private void searchAndModify(int monthCurrent, Vehicle vehicle) {
         try {
             Path filePath = Paths.get(PATH_DATA_MONTH_OV.getRoute(), monthCurrent + ".txt");
             List<String> lines = Files.readAllLines(filePath, UTF_8);
@@ -740,13 +756,14 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
                 String nam = st.nextToken();
                 String plat = st.nextToken();
 
-                if (ID == id && nam.equals(name) && plat.equals(plate)) {
+                if (nam.equals(vehicle.getOwnerName()) && plat.equals(vehicle.getLicensePlate())) {
                     lines.remove(i);
                     ////id;nombre;placa;fecha;estado
-                    String nuevoCont = v.getID()
-                            + ";" + v.getOwnerName()
-                            + ";" + v.getLicensePlate()
-                            + ";" + v.getDate().format() + "";
+                    String nuevoCont = vehicle.getID()
+                            + ";" + name
+                            + ";" + plate
+                            + ";" + vehicle.getDate().format()
+                            + ";" + state;
                     lines.add(i, nuevoCont);
                     break;
                 }
@@ -832,7 +849,58 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
     }//GEN-LAST:event_rbPlateActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        // TODO add your handling code here:
+        name = tableCustom.getValueAt(selectedRow, 2).toString();
+        plate = tableCustom.getValueAt(selectedRow, 3).toString();
+        state = tableCustom.getValueAt(selectedRow, 5).toString();
+
+        String str = "Desea confirmar los siguientes cambios:\n";
+
+        if (!name.equals(v.getOwnerName())) {
+            str += "Propietario: " + v.getOwnerName() + " → " + name + "\n";
+        }
+
+        if (!plate.equals(v.getLicensePlate())) {
+            str += "Matrícula: " + v.getLicensePlate() + " → " + plate + "\n";
+        }
+
+        if (!state.equals(v.getState())) {
+            str += "Estado: " + v.getState() + " → " + state;
+        }
+
+        int option = showConfirmDialog(
+                null,
+                str,
+                "Modificación de datos",
+                YES_NO_CANCEL_OPTION,
+                WARNING_MESSAGE
+        );
+
+        switch (option) {
+            case YES_OPTION -> {
+                searchAndModify(
+                        monthSelect,
+                        v
+                );
+                showMessageDialog(null, "Datos modificados correctamente");
+            }
+            case NO_OPTION -> {
+                model.setValueAt(v.getOwnerName(), selectedRow, 2);
+                model.setValueAt(v.getLicensePlate(), selectedRow, 3);
+                model.setValueAt(v.getState(), selectedRow, 5);
+            }
+            case CANCEL_OPTION -> {
+                model.setValueAt(v.getOwnerName(), selectedRow, 2);
+                model.setValueAt(v.getLicensePlate(), selectedRow, 3);
+                model.setValueAt(v.getState(), selectedRow, 5);
+            }
+            case CLOSED_OPTION -> {
+                model.setValueAt(v.getOwnerName(), selectedRow, 2);
+                model.setValueAt(v.getLicensePlate(), selectedRow, 3);
+                model.setValueAt(v.getState(), selectedRow, 5);
+            }
+            default -> {
+            }
+        }
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void collectResults() {
@@ -876,18 +944,20 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
         //Animacion para el mes actual
         gaugeChartVP1.setValueWithAnimation((int) vpM3Value);
 
-        //Vehiculos infractores de los 3 ultimos meses, las sumas
+        //Sumatoria de vehiculos infractores de los 3 ultimos meses
         viM1Value = vc.sumOfElements(obj4.get(1));
         viM2Value = vc.sumOfElements(obj5.get(1));
         viM3Value = vc.sumOfElements(obj6.get(1));
 
+        pa4 = vc.sumOfElements(obj1.get(3));
+        pa5 = vc.sumOfElements(obj2.get(3));
+        pa6 = vc.sumOfElements(obj3.get(3));
         //Puntos otorgados los utimos 3 meses
         poM1Value = vc.sumOfElements(obj4.get(3));
         poM2Value = vc.sumOfElements(obj5.get(3));
         poM3Value = vc.sumOfElements(obj6.get(3));
         //==========================================================
         //==========================================================
-
         totalCars1 = vc.sumOfElements(obj1.get(0));
         totalCars2 = vc.sumOfElements(obj2.get(0));
         totalCars3 = vc.sumOfElements(obj3.get(0));
@@ -945,8 +1015,8 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
                                     new double[]{
                                         totalCars1,
                                         totalOffendingCars1,
-                                        80,
-                                        89
+                                        totalCars1 - totalOffendingCars1,
+                                        pa4
                                     }
                             )
                     );
@@ -958,8 +1028,8 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
                                     new double[]{
                                         totalCars2,
                                         totalOffendingCars2,
-                                        90,
-                                        150
+                                        totalCars2 - totalOffendingCars2,
+                                        pa5
                                     }
                             )
                     );
@@ -971,8 +1041,8 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
                                     new double[]{
                                         totalCars3,
                                         totalOffendingCars3,
-                                        460,
-                                        900
+                                        totalCars3 - totalOffendingCars3,
+                                        pa5
                                     }
                             )
                     );
@@ -983,8 +1053,8 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
                                     month,
                                     new double[]{totalCars4,
                                         totalOffendingCars4,
-                                        750,
-                                        700
+                                        totalCars4 - totalOffendingCars4,
+                                        poM1Value
                                     }
                             )
                     );
@@ -996,8 +1066,8 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
                                     new double[]{
                                         totalCars5,
                                         totalOffendingCars5,
-                                        300,
-                                        150
+                                        totalCars5 - totalOffendingCars5,
+                                        poM2Value
                                     }
                             )
                     );
@@ -1009,8 +1079,8 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
                                     new double[]{
                                         totalCars6,
                                         totalOffendingCars6,
-                                        81,
-                                        200
+                                        totalCars6 - totalOffendingCars6,
+                                        poM3Value
                                     }
                             )
                     );
@@ -1023,43 +1093,8 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
 
     }
 
-    @Override
-    public final <T> T recoverData(String fileName, T data) {
-        ArrayList arrayAux = new ArrayList();
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(new FileInputStream(fileName), UTF_8))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                arrayAux.add(line);
-            }
-        } catch (IOException e) {
-            System.out.println("Error: " + e.toString());
-        }
-        return (T) arrayAux;
-    }
-
     private void renderDataTable(int monthCurrent) {
-        for (var line : recoverData(
-                PATH_DATA_MONTH_OV.getRoute() + monthCurrent + ".txt",
-                new ArrayList()
-        )) {
-            //id;nombre;placa;fecha;estado
-            StringTokenizer st = new StringTokenizer((String) line, ";");
-            int ID = Integer.parseInt(st.nextToken());
-            String name = st.nextToken();
-            String plate = st.nextToken();
-            Date date = new Date(st.nextToken());
-            String state = st.nextToken();
-            Vehicle vehicle = new Vehicle(
-                    ID,
-                    plate,
-                    plate,
-                    name,
-                    date,
-                    state
-            );
-            vc.addLast(vehicle);
-        }
+        vf.add(PATH_DATA_MONTH_OV.getRoute() + monthCurrent + ".txt");
         model.setRowCount(0);
         vc.showTable(model);
     }
@@ -1126,6 +1161,7 @@ public class Form2 extends javax.swing.JPanel implements FileManagement {
         timer.schedule(task, 0, 5000);
     }
 
+    private ListSelectionModel selectionModel;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bg;
     private javax.swing.JButton btnSave;
